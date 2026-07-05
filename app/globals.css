@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+
+body {
+  background:
+    radial-gradient(1200px 500px at 85% -10%, rgba(245,166,35,0.06), transparent 60%),
+    radial-gradient(900px 400px at -10% 110%, rgba(63,200,212,0.05), transparent 60%),
+    #0A1220;
+  color: #E9EFF8;
+}
+
+::selection { background: rgba(245,166,35,.28); }
+
+.scrollthin::-webkit-scrollbar { height: 8px; width: 8px; }
+.scrollthin::-webkit-scrollbar-thumb { background: #1E3050; border-radius: 8px; }
+
+.card {
+  @apply bg-surface border border-line rounded-xl shadow-card;
+}
+.card-pad { @apply p-5; }
+
+.eyebrow {
+  @apply font-mono text-[11px] tracking-[0.18em] uppercase text-dim;
+}
+
+.tick {
+  animation: tickpulse 2.4s ease-in-out infinite;
+}
+@keyframes tickpulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tick { animation: none; }
+  * { transition-duration: 0.01ms !important; }
+}
+
+.navlink { @apply flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[13px] text-muted hover:text-fg hover:bg-raised/70 transition-colors; }
+.navlink-active { @apply text-fg bg-raised border border-line; }

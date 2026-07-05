@@ -1,0 +1,9 @@
+services:
+  helios:
+    build: .
+    container_name: helios-platform
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
