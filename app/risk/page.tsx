@@ -8,7 +8,7 @@ export default function RiskPage() {
   const matrix = [
     { risk: "Price volatility · merchant book", cat: "Market", metric: "σ 30d €14.2/MWh", level: "elevated", mit: "BESS shifting + MI hedging active" },
     { risk: "Negative prices · midday SUD/SICI", cat: "Market", metric: "P 11% H13", level: "elevated", mit: "Zero-cap offers, curtailment pre-armed" },
-    { risk: "Forecast error · wind fleet", cat: "Forecast", metric: "nMAE 5.3%", level: "moderate", mit: "Intraday re-bidding at MI-1/MI-2" },
+    { risk: "Forecast error · wind fleet", cat: "Forecast", metric: "nMAE 5.3%", level: "moderate", mit: "Intraday re-bidding at MI-A1/MI-A2 + XBID" },
     { risk: "Single-asset outage", cat: "Operational", metric: "max 96 MW (Gela PV)", level: "moderate", mit: "Portfolio netting absorbs 61%" },
     { risk: "PPA counterparty · industrial", cat: "Financial", metric: "€8.6M annual", level: "low", mit: "Investment grade · monthly review" },
     { risk: "SAP settlement interface", cat: "Operational", metric: "38 min latency", level: "watch", mit: "Degraded — vendor ticket open" },

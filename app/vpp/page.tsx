@@ -14,21 +14,21 @@ export default function VppPage() {
       <PageHeader
         eyebrow="Optimize · Virtual Power Plant"
         title="Coordinated as one machine"
-        desc="Software — not copper — turns dispersed solar, wind and storage into dispatchable zone-level units able to offer flexibility and ancillary services to Terna."
-        right={<Badge tone="teal">UVAM qualification · 3 zones active</Badge>}
+        desc="Software — not copper — turns dispersed solar, wind and storage into dispatchable zone-level units able to offer flexibility and ancillary services to Terna, with BRP and BSP roles kept contractually separate under the TIDE dispatching framework."
+        right={<Badge tone="teal">UVAT qualification · 3 zones active</Badge>}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Stat label="Aggregated capacity" value="740" unit="MW" foot="4 virtual units" />
         <Stat label="Dispatchable flexibility" value="137" unit="MW" tone="solar" delta="BESS + curtailable PV" />
-        <Stat label="MSD availability sold" value="30" unit="MW" foot="SICI · today H00–H24" />
+        <Stat label="MBR availability sold" value="30" unit="MW" foot="SICI · today H00–H24" />
         <Stat label="Activation response" value="< 4" unit="s" tone="up" foot="BESS fast loop" />
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
         {groups.map((g) => (
           <Card key={g.name} title={g.name} sub={`${g.assets.length} assets · ${g.mw} MW aggregated · ${g.flex} MW flexible`} pad={false}
-            right={<Badge tone={g.flex > 20 ? "green" : "gray"}>{g.flex > 20 ? "UVAM active" : "monitor only"}</Badge>}>
+            right={<Badge tone={g.flex > 20 ? "green" : "gray"}>{g.flex > 20 ? "UVAT active" : "monitor only"}</Badge>}>
             <div className="px-5 py-4">
               <div className="flex h-2.5 rounded-full overflow-hidden bg-raised mb-4">
                 {g.assets.map((a) => (

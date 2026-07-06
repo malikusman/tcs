@@ -19,8 +19,9 @@ Demo web app: AI renewable-energy commercialization platform ("HELIOS") built by
 ## Conventions
 - Design tokens live in `tailwind.config.ts` (ink/surface/raised/line, solar/wind/battery, up/down, fg/muted/dim) and fonts in `app/layout.tsx` (Space Grotesk display, Inter body, IBM Plex Mono for all numbers).
 - Numbers are always `font-mono tabular-nums`. Eyebrow labels use `.eyebrow`.
-- Demo narrative is frozen at Sat 05 Jul 2026, 14:00 CET (nowHour = 14 in series.ts). Keep new data consistent with it.
-- Italian market domain: MGP/MI/MSD, PUN, zones NORD/CNOR/CSUD/SUD/SICI/SARD, Terna/GME/GSE. Keep terminology accurate.
+- Demo narrative is frozen at Sun 05 Jul 2026, 14:00 CET (nowHour = 14 in series.ts). Keep new data consistent with it.
+- Italian market domain, post-TIDE nomenclature: MGP day-ahead / MI-A1–A3 intraday auctions / XBID continuous / MBR (Balancing & Redispatching Market, ex-MSD); UVAT virtual units (ex-UVAM); PUN Index; 15-minute MTUs; zones NORD/CNOR/CSUD/SUD/SICI/SARD; Terna/GME/GSE/ARERA. Keep terminology accurate — never reintroduce MI-1/2/3, MSD or UVAM.
+- Automation narrative: the L0–L4 ladder is gated by /paper (Paper Trading / Shadow Mode) graduation criteria — signals hash-locked pre-gate, cleared vs published GME results; L2 unlocked 27 Apr 2026, L3 unlocked 05 Jul 08:02 (see audit log). Keep trading, paper, and admin pages consistent with this story.
 
 ## Safe change checklist
 1. `npm run build` after edits (asset detail page uses `generateStaticParams` — keep it in sync with ASSETS ids).

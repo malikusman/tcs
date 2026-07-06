@@ -1,7 +1,7 @@
 // ---------- Trading ----------
 export interface Bid {
   id: string;
-  market: "MGP" | "MI-1" | "MI-2" | "MI-3" | "MSD";
+  market: "MGP" | "MI-A1" | "MI-A2" | "MI-A3" | "XBID" | "MBR";
   zone: string;
   hours: string;
   volumeMWh: number;
@@ -12,13 +12,13 @@ export interface Bid {
 }
 
 export const BIDS: Bid[] = [
-  { id: "B-88412", market: "MGP", zone: "SUD", hours: "H09–H16", volumeMWh: 2140, priceEUR: 0.0, status: "accepted", source: "AI · auto", asset: "Portfolio · SUD" },
-  { id: "B-88413", market: "MGP", zone: "SICI", hours: "H10–H15", volumeMWh: 1260, priceEUR: 0.0, status: "accepted", source: "AI · auto", asset: "Portfolio · SICI" },
-  { id: "B-88414", market: "MGP", zone: "SARD", hours: "H09–H17", volumeMWh: 840, priceEUR: 0.0, status: "accepted", source: "AI · approved", asset: "Portfolio · SARD" },
-  { id: "B-88420", market: "MI-1", zone: "SUD", hours: "H14–H16", volumeMWh: -180, priceEUR: 71.4, status: "accepted", source: "AI · auto", asset: "WD-BAS-01" },
-  { id: "B-88421", market: "MI-2", zone: "SICI", hours: "H18–H20", volumeMWh: 96, priceEUR: 128.0, status: "pending", source: "AI · approved", asset: "BE-SIC-01" },
-  { id: "B-88422", market: "MSD", zone: "SICI", hours: "H00–H24", volumeMWh: 30, priceEUR: 41.2, status: "accepted", source: "Manual", asset: "BE-SIC-01" },
-  { id: "B-88423", market: "MI-2", zone: "CNOR", hours: "H15–H17", volumeMWh: -64, priceEUR: 66.8, status: "draft", source: "AI · approved", asset: "PV-LAZ-01" },
+  { id: "B-88412", market: "MGP", zone: "SUD", hours: "09:00–16:00 · 15-min MTUs", volumeMWh: 2140, priceEUR: 0.0, status: "accepted", source: "AI · auto", asset: "Portfolio · SUD" },
+  { id: "B-88413", market: "MGP", zone: "SICI", hours: "10:00–15:00 · 15-min MTUs", volumeMWh: 1260, priceEUR: 0.0, status: "accepted", source: "AI · auto", asset: "Portfolio · SICI" },
+  { id: "B-88414", market: "MGP", zone: "SARD", hours: "09:00–17:00 · 15-min MTUs", volumeMWh: 840, priceEUR: 0.0, status: "accepted", source: "AI · approved", asset: "Portfolio · SARD" },
+  { id: "B-88420", market: "MI-A1", zone: "SUD", hours: "14:00–16:00 · 15-min MTUs", volumeMWh: -180, priceEUR: 71.4, status: "accepted", source: "AI · auto", asset: "WD-BAS-01" },
+  { id: "B-88421", market: "MI-A2", zone: "SICI", hours: "18:00–20:00 · 15-min MTUs", volumeMWh: 96, priceEUR: 128.0, status: "pending", source: "AI · approved", asset: "BE-SIC-01" },
+  { id: "B-88422", market: "MBR", zone: "SICI", hours: "00:00–24:00 · 15-min MTUs", volumeMWh: 30, priceEUR: 41.2, status: "accepted", source: "Manual", asset: "BE-SIC-01" },
+  { id: "B-88423", market: "XBID", zone: "CNOR", hours: "15:00–17:00 · 15-min MTUs", volumeMWh: -64, priceEUR: 66.8, status: "draft", source: "AI · approved", asset: "PV-LAZ-01" },
 ];
 
 export const AUTOMATION_LEVELS = [
@@ -69,11 +69,11 @@ export const AGENT_RUNS: AgentRun[] = [
   {
     id: "RUN-4473",
     agent: "BESS Agent",
-    goal: "Re-optimize Gela BESS after MI-1 clearing",
+    goal: "Re-optimize Gela BESS after MI-A1 clearing",
     status: "running",
     started: "13:58 CET",
     steps: [
-      { tool: "market.results", detail: "MI-1 cleared · SICI H18 at €131.20", state: "done" },
+      { tool: "market.results", detail: "MI-A1 cleared · SICI H18 at €131.20", state: "done" },
       { tool: "twin.simulate", detail: "Cycling 3 dispatch plans in digital twin", state: "active" },
       { tool: "schedule.commit", detail: "Push revised SOC plan to SCADA", state: "queued" },
     ],
@@ -117,13 +117,13 @@ export interface PaperSignal {
 }
 
 export const PAPER_SIGNALS: PaperSignal[] = [
-  { id: "SIG-2851", locked: "05 Jul 11:38:52", gate: "MGP 06 Jul · 12:00", market: "MGP", zone: "ALL", instruction: "D+1 bid set · commit P48 blend, shade H12–H14 SUD to P40", rationale: "Sunday oversupply; neg-price prob 14% in solar belly", hash: "e3b7…41c9", deltaEUR: null, status: "locked" },
-  { id: "SIG-2850", locked: "05 Jul 13:47:10", gate: "MI-3 · 14:30", market: "MI-3", zone: "SICI", instruction: "Hold BESS 96 MWh for H18–H20, floor €126", rationale: "Evening spread forecast +€38 vs day-ahead lock, 74% confidence", hash: "9f02…b7aa", deltaEUR: null, status: "locked" },
-  { id: "SIG-2849", locked: "05 Jul 12:55:31", gate: "MI-2 · 13:30", market: "MI-2", zone: "CNOR", instruction: "Sell 64 MWh H15–H17, floor €66.80", rationale: "Wind front 90 min earlier than ECMWF run; close long before delivery", hash: "77d1…03fe", deltaEUR: null, status: "locked" },
-  { id: "SIG-2848", locked: "05 Jul 09:12:44", gate: "MI-1 · 10:30", market: "MI-1", zone: "SUD", instruction: "Buy back 180 MWh H14–H16", rationale: "Satellite nowcast −8% vs D-1 commit; convert imbalance into managed trade", hash: "c58a…d210", deltaEUR: 1140, status: "settled" },
+  { id: "SIG-2851", locked: "05 Jul 11:38:52", gate: "MGP 06 Jul · 12:00", market: "MGP", zone: "ALL", instruction: "D+1 bid set · commit P48 blend, shade H12–H14 SUD to P40", rationale: "Record solar in-feed forecast; neg-price prob 14% in solar belly", hash: "e3b7…41c9", deltaEUR: null, status: "locked" },
+  { id: "SIG-2850", locked: "05 Jul 13:47:10", gate: "MI-A3 · 14:30", market: "MI-A3", zone: "SICI", instruction: "Hold BESS 96 MWh for H18–H20, floor €126", rationale: "Evening spread forecast +€38 vs day-ahead lock, 74% confidence", hash: "9f02…b7aa", deltaEUR: null, status: "locked" },
+  { id: "SIG-2849", locked: "05 Jul 12:55:31", gate: "XBID · cont. (H15 lead 14:15)", market: "XBID", zone: "CNOR", instruction: "Sell 64 MWh H15–H17, floor €66.80", rationale: "Wind front 90 min earlier than ECMWF run; close long before delivery", hash: "77d1…03fe", deltaEUR: null, status: "locked" },
+  { id: "SIG-2848", locked: "05 Jul 09:12:44", gate: "MI-A1 · 10:30", market: "MI-A1", zone: "SUD", instruction: "Buy back 180 MWh H14–H16", rationale: "Satellite nowcast −8% vs D-1 commit; convert imbalance into managed trade", hash: "c58a…d210", deltaEUR: 1140, status: "settled" },
   { id: "SIG-2847", locked: "04 Jul 11:41:22", gate: "MGP 05 Jul · 12:00", market: "MGP", zone: "SUD", instruction: "Commit P42 (not P50) in H12–H15 · 1,980 MWh", rationale: "Neg-price prob 11% H13; asymmetric imbalance penalty favors shading", hash: "1a9e…6f57", deltaEUR: 3140, status: "settled" },
   { id: "SIG-2846", locked: "04 Jul 11:41:22", gate: "MGP 05 Jul · 12:00", market: "MGP", zone: "SICI", instruction: "Commit P55 H10–H15 · 1,310 MWh", rationale: "High-confidence Solcast nowcast (nMAE 1.8%); sell above P50 into tight zone", hash: "b402…8811", deltaEUR: 1870, status: "settled" },
-  { id: "SIG-2843", locked: "03 Jul 17:20:08", gate: "MI-2 04 Jul · 13:30", market: "MI-2", zone: "SARD", instruction: "Sell 60 MWh H16, floor €71.00", rationale: "Cable congestion signal; expected SARD premium did not materialize", hash: "f6c3…2d94", deltaEUR: -640, status: "settled" },
+  { id: "SIG-2843", locked: "03 Jul 17:20:08", gate: "MI-A2 04 Jul · 13:30", market: "MI-A2", zone: "SARD", instruction: "Sell 60 MWh H16, floor €71.00", rationale: "Cable congestion signal; expected SARD premium did not materialize", hash: "f6c3…2d94", deltaEUR: -640, status: "settled" },
 ];
 
 export interface PaperOrder {
@@ -139,13 +139,13 @@ export interface PaperOrder {
 }
 
 export const PAPER_ORDERS: PaperOrder[] = [
-  { id: "P-7741", market: "MGP", zone: "SUD", hours: "H09–H16", volumeMWh: 1980, limitEUR: 0, clearedEUR: 88.1, deltaEUR: 3140, status: "filled" },
-  { id: "P-7742", market: "MGP", zone: "SICI", hours: "H10–H15", volumeMWh: 1310, limitEUR: 0, clearedEUR: 99.65, deltaEUR: 1870, status: "filled" },
-  { id: "P-7743", market: "MGP", zone: "SARD", hours: "H09–H17", volumeMWh: 840, limitEUR: 0, clearedEUR: 86.2, deltaEUR: 410, status: "filled" },
-  { id: "P-7744", market: "MI-1", zone: "SUD", hours: "H14–H16", volumeMWh: -180, limitEUR: 72.0, clearedEUR: 71.4, deltaEUR: 1140, status: "filled" },
-  { id: "P-7745", market: "MI-2", zone: "SARD", hours: "H16", volumeMWh: 60, limitEUR: 71.0, clearedEUR: 68.3, deltaEUR: -640, status: "expired" },
-  { id: "P-7746", market: "MI-3", zone: "SICI", hours: "H18–H20", volumeMWh: 96, limitEUR: 126.0, clearedEUR: null, deltaEUR: null, status: "working" },
-  { id: "P-7747", market: "MGP", zone: "ALL", hours: "H00–H24", volumeMWh: 4120, limitEUR: 0, clearedEUR: null, deltaEUR: null, status: "working" },
+  { id: "P-7741", market: "MGP", zone: "SUD", hours: "09:00–16:00 · 15-min MTUs", volumeMWh: 1980, limitEUR: 0, clearedEUR: 88.1, deltaEUR: 3140, status: "filled" },
+  { id: "P-7742", market: "MGP", zone: "SICI", hours: "10:00–15:00 · 15-min MTUs", volumeMWh: 1310, limitEUR: 0, clearedEUR: 99.65, deltaEUR: 1870, status: "filled" },
+  { id: "P-7743", market: "MGP", zone: "SARD", hours: "09:00–17:00 · 15-min MTUs", volumeMWh: 840, limitEUR: 0, clearedEUR: 86.2, deltaEUR: 410, status: "filled" },
+  { id: "P-7744", market: "MI-A1", zone: "SUD", hours: "14:00–16:00 · 15-min MTUs", volumeMWh: -180, limitEUR: 72.0, clearedEUR: 71.4, deltaEUR: 1140, status: "filled" },
+  { id: "P-7745", market: "MI-A2", zone: "SARD", hours: "16:00–17:00 · 15-min MTUs", volumeMWh: 60, limitEUR: 71.0, clearedEUR: 68.3, deltaEUR: -640, status: "expired" },
+  { id: "P-7746", market: "MI-A3", zone: "SICI", hours: "18:00–20:00 · 15-min MTUs", volumeMWh: 96, limitEUR: 126.0, clearedEUR: null, deltaEUR: null, status: "working" },
+  { id: "P-7747", market: "MGP", zone: "ALL", hours: "00:00–24:00 · 15-min MTUs", volumeMWh: 4120, limitEUR: 0, clearedEUR: null, deltaEUR: null, status: "working" },
 ];
 
 export interface GraduationStep {
@@ -196,8 +196,8 @@ export interface Alert {
 }
 
 export const ALERTS: Alert[] = [
-  { id: "A-1", sev: "critical", time: "13:51", title: "Curtailment order · Trapani Sole II", detail: "Terna dispatch order BDE limits export to 27 MW until 16:00.", action: "AI: shift 14 MWh to Gela BESS charge window and revise MI-2 offer.", module: "Grid" },
-  { id: "A-2", sev: "warning", time: "13:22", title: "Forecast deviation > 8% · Benevento Eolico", detail: "Wind front arriving 90 min earlier than ECMWF run.", action: "AI: MI-2 sell 64 MWh H15–H17 at ≥ €66.80 to close position.", module: "Forecasting" },
+  { id: "A-1", sev: "critical", time: "13:51", title: "Curtailment order · Trapani Sole II", detail: "Terna dispatch order BDE limits export to 27 MW until 16:00.", action: "AI: shift 14 MWh to Gela BESS charge window and revise MI-A2 offer.", module: "Grid" },
+  { id: "A-2", sev: "warning", time: "13:22", title: "Forecast deviation > 8% · Benevento Eolico", detail: "Wind front arriving 90 min earlier than ECMWF run.", action: "AI: XBID sell 64 MWh H15–H17 at ≥ €66.80 to close position.", module: "Forecasting" },
   { id: "A-3", sev: "warning", time: "12:40", title: "Negative price risk · H13–H14 SUD", detail: "P(price < 0) = 11% on solar oversupply.", action: "AI: cap MGP offer at €0.00 and pre-arm curtailment on FiT assets.", module: "Market" },
   { id: "A-4", sev: "info", time: "12:05", title: "MGP gate closes in 22h", detail: "D+1 bid set drafted by Trading Agent, pending approval.", action: "Review 6 zone bids in Trading → Approvals.", module: "Trading" },
   { id: "A-5", sev: "info", time: "10:18", title: "Model drift watch · pun-price-v6", detail: "7-day MAE up 0.9 € vs baseline; gas volatility regime shift.", action: "MLOps: retraining scheduled tonight 02:00 with June data.", module: "MLOps" },
@@ -223,7 +223,7 @@ export const USERS = [
 
 export const AUDIT_LOG = [
   { ts: "13:58:12", user: "bess-agent (svc)", action: "schedule.commit queued", target: "BE-SIC-01", prev: "SOC plan v41", next: "SOC plan v42", approval: "policy L3" },
-  { ts: "13:44:07", user: "g.ferraro", action: "bid.approve", target: "B-88421 · MI-2 SICI", prev: "pending", next: "submitted", approval: "human" },
+  { ts: "13:44:07", user: "g.ferraro", action: "bid.approve", target: "B-88421 · MI-A2 SICI", prev: "pending", next: "submitted", approval: "human" },
   { ts: "12:31:55", user: "trading-agent (svc)", action: "bid.draft", target: "6 × MGP zone bids", prev: "—", next: "draft v3", approval: "awaiting" },
   { ts: "11:30:41", user: "forecast-agent (svc)", action: "forecast.publish", target: "portfolio D-1", prev: "v2026-07-05.2", next: "v2026-07-05.3", approval: "auto" },
   { ts: "09:15:03", user: "settlement-agent (svc)", action: "ticket.raise", target: "PV-SIC-02 · Jun invoice", prev: "—", next: "FIN-2211", approval: "escalated" },
@@ -231,7 +231,7 @@ export const AUDIT_LOG = [
 ];
 
 export const INTEGRATIONS = [
-  { name: "Terna · MSD / dispatch orders", kind: "IEC 60870-5-104", state: "healthy", latency: "1.2 s" },
+  { name: "Terna · MBR / dispatch orders", kind: "IEC 60870-5-104", state: "healthy", latency: "1.2 s" },
   { name: "GME · MGP / MI market results", kind: "REST + SFTP", state: "healthy", latency: "4 min" },
   { name: "SCADA fleet gateway", kind: "OPC-UA / MQTT", state: "healthy", latency: "900 ms" },
   { name: "ECMWF / ICON / Meteomatics", kind: "Weather APIs", state: "healthy", latency: "12 min" },

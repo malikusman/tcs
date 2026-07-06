@@ -7,7 +7,7 @@ export default function BatteryPage() {
 
   const stack = [
     { s: "Energy arbitrage (MGP/MI)", eur: "€3,940", share: 46 },
-    { s: "MSD · reserve capacity", eur: "€2,610", share: 30 },
+    { s: "MBR · reserve capacity", eur: "€2,610", share: 30 },
     { s: "Imbalance absorption (portfolio)", eur: "€1,380", share: 16 },
     { s: "Frequency regulation (aFRR pilot)", eur: "€690", share: 8 },
   ];
@@ -54,7 +54,7 @@ export default function BatteryPage() {
               <li><span className="text-fg font-mono">SOC ∈ [10%, 95%]</span> — warranty envelope</li>
               <li><span className="text-fg font-mono">|P| ≤ 40 MW</span> — PCS rating</li>
               <li><span className="text-fg font-mono">η_rt = 88%</span> — priced into spreads</li>
-              <li><span className="text-fg font-mono">reserve ≥ 12 MWh</span> — MSD commitment H00–H24</li>
+              <li><span className="text-fg font-mono">reserve ≥ 12 MWh</span> — MBR commitment H00–H24</li>
               <li><span className="text-fg font-mono">cycles ≤ 1.4/day</span> — degradation budget</li>
             </ul>
           </Card>

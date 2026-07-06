@@ -28,7 +28,7 @@ const SCRIPTS: { q: string; tools: { name: string; detail: string }[]; a: string
       { name: "twin.simulate", detail: "3 dispatch plans · degradation priced" },
       { name: "optimizer.milp", detail: "re-solve with relaxed reserve" },
     ],
-    a: "Marginally, yes. Releasing 8 MWh of the MSD reserve on Gela BESS toward the H19–H21 peak adds €640 expected revenue at 74% confidence, but drops reserve margin below the 12 MWh policy floor. Within current policy the answer is no; if you approve a one-day exception (requires L3 override + 4-eyes), I can commit the revised plan. Recommended: keep current plan, revisit after MI-2 clears at 17:30.",
+    a: "Marginally, yes. Releasing 8 MWh of the MBR reserve on Gela BESS toward the H19–H21 peak adds €640 expected revenue at 74% confidence, but drops reserve margin below the 12 MWh policy floor. Within current policy the answer is no; if you approve a one-day exception (requires L3 override + 4-eyes), I can commit the revised plan. Recommended: keep current plan, revisit after MI-A2 clears at 17:30.",
   },
   {
     q: "Show plants with forecast errors above 4% and tell me why",

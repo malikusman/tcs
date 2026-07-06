@@ -10,7 +10,7 @@ export default function TradingPage() {
       <PageHeader
         eyebrow="Trade · Trading Engine"
         title="Bidding & market execution"
-        desc="The optimizer turns probabilistic forecasts into zone-level bid curves for MGP, intraday sessions and MSD. Every automated order runs inside hard policy constraints with full audit."
+        desc="The optimizer turns probabilistic forecasts into zone-level bid curves for MGP, the MI-A intraday auctions, XBID continuous trading and MBR. Every automated order runs inside hard policy constraints with full audit."
         right={<Badge tone="amber">MGP D+1 gate · 6 bids awaiting approval</Badge>}
       />
 
@@ -70,7 +70,7 @@ export default function TradingPage() {
           </div>
           <div>
             <div className="eyebrow mb-1.5">Price strategy</div>
-            Zero-price (price-taker) offers for must-run solar; Sicilian BESS holds 96 MWh for MI-2 where the H19
+            Zero-price (price-taker) offers for must-run solar; Sicilian BESS holds 96 MWh for MI-A2 where the H19
             spread forecast (+€38) beats the day-ahead lock with 74% confidence.
           </div>
           <div>

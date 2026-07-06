@@ -16,7 +16,7 @@ export default function Dashboard() {
   return (
     <>
       <PageHeader
-        eyebrow="Command Center · Saturday 05 Jul 2026"
+        eyebrow="Command Center · Sunday 05 Jul 2026"
         title="Portfolio operating picture"
         desc="Fleet-wide production, market position and AI recommendations for the Tages renewable portfolio — one operational brain across 14 assets in 6 bidding zones."
         right={
@@ -30,7 +30,7 @@ export default function Dashboard() {
         <Stat label="Live output" value={totals.now.toFixed(1)} unit="MW" delta="▲ 4.2%" tone="up" foot="vs D-1 same hour" />
         <Stat label="Installed capacity" value={totals.cap.toFixed(0)} unit="MW" foot={`${online}/${totals.count} assets online`} />
         <Stat label="Energy today" value={totals.today.toLocaleString()} unit="MWh" delta="P50 track" tone="solar" />
-        <Stat label="Revenue today" value="€248k" delta="▲ €31k vs plan" tone="up" foot="merchant + PPA + MSD" />
+        <Stat label="Revenue today" value="€248k" delta="▲ €31k vs plan" tone="up" foot="merchant + PPA + MBR" />
         <Stat label="Imbalance MTD" value="−0.7" unit="%" delta="target ≤ 2.0%" tone="up" foot="portfolio-netted" />
       </div>
 

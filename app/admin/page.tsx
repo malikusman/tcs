@@ -52,6 +52,25 @@ export default function AdminPage() {
         </Card>
       </div>
 
+      <Card className="mb-4" title="Compliance" sub="Regulatory obligations on the platform roadmap — shown as planned until delivered" pad={false}>
+        <div className="divide-y divide-linesoft">
+          {[
+            { name: "REMIT transaction reporting", detail: "Order and trade reporting to ACER via RRM once live trading volumes flow through the platform.", phase: "planned · Phase 1" },
+            { name: "GO / guarantees of origin management", detail: "GSE GO issuance tracking, transfer and cancellation against PPA and merchant volumes.", phase: "planned" },
+            { name: "PPA contract lifecycle", detail: "Contract terms, shape/volume obligations and invoicing checks integrated into settlement.", phase: "planned" },
+            { name: "MACSE / capacity market auctions", detail: "Auction participation workflow and obligation monitoring for the BESS fleet.", phase: "planned" },
+          ].map((c) => (
+            <div key={c.name} className="px-5 py-3.5 flex items-start justify-between gap-4">
+              <div>
+                <div className="text-[13px] font-medium">{c.name}</div>
+                <div className="text-[12px] text-muted leading-relaxed">{c.detail}</div>
+              </div>
+              <Badge tone="gray">{c.phase}</Badge>
+            </div>
+          ))}
+        </div>
+      </Card>
+
       <Card title="Audit trail" sub="Immutable log — user or agent, previous value, new value, and the approval that authorized it" pad={false}>
         <TableWrap>
           <thead><tr><Th>Time (CET)</Th><Th>Actor</Th><Th>Action</Th><Th>Target</Th><Th>Before → After</Th><Th>Authorization</Th></tr></thead>

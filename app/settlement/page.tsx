@@ -50,8 +50,8 @@ export default function SettlementPage() {
 
       <div className="grid md:grid-cols-3 gap-4 mt-4">
         {[
-          { t: "GME market results", d: "MGP/MI accepted quantities and clearing prices ingested nightly via SFTP; matched to bid IDs automatically." },
-          { t: "Terna imbalance charges", d: "Zonal imbalance prices applied to schedule-vs-meter deltas; sign convention validated by rule engine." },
+          { t: "GME market results", d: "MGP / MI-A / XBID accepted quantities and clearing prices ingested nightly via SFTP; matched to bid IDs automatically." },
+          { t: "Terna imbalance charges", d: "Imbalance is settled against Terna on 15-minute settlement periods: zonal imbalance prices applied to schedule-vs-meter deltas per quarter-hour; sign convention validated by rule engine." },
           { t: "Exception workflow", d: "Mismatches route to finance with full lineage: bid → clearing → dispatch → meter → invoice line." },
         ].map((c) => (
           <Card key={c.t} title={c.t}><p className="text-[12.5px] text-muted leading-relaxed">{c.d}</p></Card>
