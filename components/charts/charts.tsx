@@ -145,6 +145,23 @@ export function RaRChart({ data }: { data: any[] }) {
   );
 }
 
+export function PaperPnlChart({ data }: { data: any[] }) {
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <ComposedChart data={data} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
+        <CartesianGrid {...GRID} />
+        <XAxis dataKey="w" tick={AX} tickLine={false} axisLine={{ stroke: "#1E3050" }} interval={2} />
+        <YAxis tick={AX} tickLine={false} axisLine={false} unit="k" />
+        <Tooltip {...TT} />
+        <ReferenceLine y={0} stroke="#5C7397" strokeDasharray="4 4" label={{ value: "naive baseline · sell P50 @ MGP, no MI, no BESS", fill: "#8CA1BE", fontSize: 10, position: "insideBottomLeft" }} />
+        <Area type="monotone" dataKey="ai" stroke="#F5A623" strokeWidth={2.4} fill="#F5A623" fillOpacity={0.08} name="AI paper book · cumulative k€ vs baseline" />
+        <Line type="monotone" dataKey="desk" stroke="#3FC8D4" strokeWidth={1.6} dot={false} name="Human desk actual · cumulative k€ vs baseline" />
+        <Legend wrapperStyle={{ fontSize: 11, fontFamily: "IBM Plex Mono, monospace" }} />
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+}
+
 export function Spark({ data, dataKey, color = "#F5A623", height = 44 }: { data: any[]; dataKey: string; color?: string; height?: number }) {
   return (
     <ResponsiveContainer width="100%" height={height}>

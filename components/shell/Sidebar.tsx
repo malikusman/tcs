@@ -3,59 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cls } from "@/lib/util";
-import {
-  LayoutGrid, Factory, Activity, CloudSun, TrendingUp, CandlestickChart,
-  Boxes, BatteryCharging, Network, ShieldAlert, Scale, Bot, Workflow,
-  BellRing, Settings2, Sun,
-} from "lucide-react";
-
-const NAV: { group: string; items: { href: string; label: string; icon: React.ElementType }[] }[] = [
-  {
-    group: "Operate",
-    items: [
-      { href: "/", label: "Command Center", icon: LayoutGrid },
-      { href: "/assets", label: "Asset Registry", icon: Factory },
-      { href: "/monitoring", label: "Live Monitoring", icon: Activity },
-    ],
-  },
-  {
-    group: "Intelligence",
-    items: [
-      { href: "/forecasting", label: "Forecasting Engine", icon: CloudSun },
-      { href: "/market", label: "Market Intelligence", icon: TrendingUp },
-    ],
-  },
-  {
-    group: "Trade & Optimize",
-    items: [
-      { href: "/trading", label: "Trading Engine", icon: CandlestickChart },
-      { href: "/portfolio", label: "Portfolio Optimizer", icon: Boxes },
-      { href: "/battery", label: "BESS Dispatch", icon: BatteryCharging },
-      { href: "/vpp", label: "Virtual Power Plant", icon: Network },
-    ],
-  },
-  {
-    group: "Risk & Finance",
-    items: [
-      { href: "/risk", label: "Risk Management", icon: ShieldAlert },
-      { href: "/settlement", label: "Settlement", icon: Scale },
-    ],
-  },
-  {
-    group: "AI Platform",
-    items: [
-      { href: "/copilot", label: "AI Copilot", icon: Bot },
-      { href: "/agents", label: "Agents & MLOps", icon: Workflow },
-    ],
-  },
-  {
-    group: "Govern",
-    items: [
-      { href: "/alerts", label: "Alerts & Events", icon: BellRing },
-      { href: "/admin", label: "Administration", icon: Settings2 },
-    ],
-  },
-];
+import { Sun } from "lucide-react";
+import { NAV } from "./nav";
 
 export default function Sidebar() {
   const path = usePathname();

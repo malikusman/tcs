@@ -100,6 +100,90 @@ export const ML_MODELS = [
   { name: "imbalance-v3", task: "Imbalance sign", algo: "XGBoost classifier", nmae: "AUC 0.81", stage: "Production", drift: "drifting" },
 ];
 
+// ---------- Paper Trading / Shadow Mode ----------
+// Signals are hash-locked before the relevant market gate, then cleared against
+// actual published GME/Terna results — no hindsight bias by construction.
+export interface PaperSignal {
+  id: string;
+  locked: string; // when the signal was hash-locked (always before the gate)
+  gate: string;
+  market: Bid["market"];
+  zone: string;
+  instruction: string;
+  rationale: string;
+  hash: string;
+  deltaEUR: number | null; // paper P&L vs naive baseline; null = awaiting clearing
+  status: "settled" | "locked";
+}
+
+export const PAPER_SIGNALS: PaperSignal[] = [
+  { id: "SIG-2851", locked: "05 Jul 11:38:52", gate: "MGP 06 Jul · 12:00", market: "MGP", zone: "ALL", instruction: "D+1 bid set · commit P48 blend, shade H12–H14 SUD to P40", rationale: "Sunday oversupply; neg-price prob 14% in solar belly", hash: "e3b7…41c9", deltaEUR: null, status: "locked" },
+  { id: "SIG-2850", locked: "05 Jul 13:47:10", gate: "MI-3 · 14:30", market: "MI-3", zone: "SICI", instruction: "Hold BESS 96 MWh for H18–H20, floor €126", rationale: "Evening spread forecast +€38 vs day-ahead lock, 74% confidence", hash: "9f02…b7aa", deltaEUR: null, status: "locked" },
+  { id: "SIG-2849", locked: "05 Jul 12:55:31", gate: "MI-2 · 13:30", market: "MI-2", zone: "CNOR", instruction: "Sell 64 MWh H15–H17, floor €66.80", rationale: "Wind front 90 min earlier than ECMWF run; close long before delivery", hash: "77d1…03fe", deltaEUR: null, status: "locked" },
+  { id: "SIG-2848", locked: "05 Jul 09:12:44", gate: "MI-1 · 10:30", market: "MI-1", zone: "SUD", instruction: "Buy back 180 MWh H14–H16", rationale: "Satellite nowcast −8% vs D-1 commit; convert imbalance into managed trade", hash: "c58a…d210", deltaEUR: 1140, status: "settled" },
+  { id: "SIG-2847", locked: "04 Jul 11:41:22", gate: "MGP 05 Jul · 12:00", market: "MGP", zone: "SUD", instruction: "Commit P42 (not P50) in H12–H15 · 1,980 MWh", rationale: "Neg-price prob 11% H13; asymmetric imbalance penalty favors shading", hash: "1a9e…6f57", deltaEUR: 3140, status: "settled" },
+  { id: "SIG-2846", locked: "04 Jul 11:41:22", gate: "MGP 05 Jul · 12:00", market: "MGP", zone: "SICI", instruction: "Commit P55 H10–H15 · 1,310 MWh", rationale: "High-confidence Solcast nowcast (nMAE 1.8%); sell above P50 into tight zone", hash: "b402…8811", deltaEUR: 1870, status: "settled" },
+  { id: "SIG-2843", locked: "03 Jul 17:20:08", gate: "MI-2 04 Jul · 13:30", market: "MI-2", zone: "SARD", instruction: "Sell 60 MWh H16, floor €71.00", rationale: "Cable congestion signal; expected SARD premium did not materialize", hash: "f6c3…2d94", deltaEUR: -640, status: "settled" },
+];
+
+export interface PaperOrder {
+  id: string;
+  market: Bid["market"];
+  zone: string;
+  hours: string;
+  volumeMWh: number;
+  limitEUR: number; // 0 = price-taker
+  clearedEUR: number | null; // actual published GME result
+  deltaEUR: number | null; // vs naive baseline (sell P50 at MGP, no MI, no BESS)
+  status: "filled" | "working" | "expired";
+}
+
+export const PAPER_ORDERS: PaperOrder[] = [
+  { id: "P-7741", market: "MGP", zone: "SUD", hours: "H09–H16", volumeMWh: 1980, limitEUR: 0, clearedEUR: 88.1, deltaEUR: 3140, status: "filled" },
+  { id: "P-7742", market: "MGP", zone: "SICI", hours: "H10–H15", volumeMWh: 1310, limitEUR: 0, clearedEUR: 99.65, deltaEUR: 1870, status: "filled" },
+  { id: "P-7743", market: "MGP", zone: "SARD", hours: "H09–H17", volumeMWh: 840, limitEUR: 0, clearedEUR: 86.2, deltaEUR: 410, status: "filled" },
+  { id: "P-7744", market: "MI-1", zone: "SUD", hours: "H14–H16", volumeMWh: -180, limitEUR: 72.0, clearedEUR: 71.4, deltaEUR: 1140, status: "filled" },
+  { id: "P-7745", market: "MI-2", zone: "SARD", hours: "H16", volumeMWh: 60, limitEUR: 71.0, clearedEUR: 68.3, deltaEUR: -640, status: "expired" },
+  { id: "P-7746", market: "MI-3", zone: "SICI", hours: "H18–H20", volumeMWh: 96, limitEUR: 126.0, clearedEUR: null, deltaEUR: null, status: "working" },
+  { id: "P-7747", market: "MGP", zone: "ALL", hours: "H00–H24", volumeMWh: 4120, limitEUR: 0, clearedEUR: null, deltaEUR: null, status: "working" },
+];
+
+export interface GraduationStep {
+  from: string;
+  to: string;
+  name: string;
+  status: "unlocked" | "in-progress" | "locked";
+  when: string;
+  criteria: { name: string; target: string; actual: string; pct: number }[];
+}
+
+export const GRADUATION: GraduationStep[] = [
+  {
+    from: "L1", to: "L2", name: "Paper signals → operator-approved orders", status: "unlocked", when: "Unlocked 27 Apr 2026 · risk committee",
+    criteria: [
+      { name: "Paper capture vs naive baseline", target: "≥ +1.0pp · 8 consecutive wks", actual: "+2.3pp · 8/8 wks", pct: 100 },
+      { name: "Paper imbalance ratio", target: "< 2.0% of traded volume", actual: "1.6%", pct: 100 },
+      { name: "Pre-gate signal lock integrity", target: "100% hash-locked before gate", actual: "612/612 signals", pct: 100 },
+    ],
+  },
+  {
+    from: "L2", to: "L3", name: "Approved orders → supervised auto-submit", status: "unlocked", when: "Unlocked today 08:02 · 4-eyes · L. Moretti",
+    criteria: [
+      { name: "GME order acceptance rate", target: "≥ 97% over 10 wks", actual: "98.4%", pct: 100 },
+      { name: "Live capture vs naive baseline", target: "≥ +1.5pp · 10 consecutive wks", actual: "+1.9pp · 10/10 wks", pct: 100 },
+      { name: "Limit breaches / kill-switch events", target: "0", actual: "0", pct: 100 },
+    ],
+  },
+  {
+    from: "L3", to: "L4", name: "Supervised → autonomous under policy", status: "in-progress", when: "Window opened today · projected Oct 2026",
+    criteria: [
+      { name: "Supervised wks with zero policy breach", target: "12 wks", actual: "0/12 wks · started today", pct: 2 },
+      { name: "RL intraday challenger ≥ champion (shadow)", target: "8 consecutive wks", actual: "3/8 wks", pct: 38 },
+      { name: "Risk-committee mandate for L4", target: "Board sign-off", actual: "On September board agenda", pct: 10 },
+    ],
+  },
+];
+
 // ---------- Alerts ----------
 export interface Alert {
   id: string;

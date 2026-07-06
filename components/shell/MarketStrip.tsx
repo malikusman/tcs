@@ -46,7 +46,7 @@ export default function MarketStrip() {
   const now = useNow();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-linesoft bg-[#0B1424]/90 backdrop-blur px-5 lg:px-8">
+    <header className="sticky top-[52px] md:top-0 z-40 border-b border-linesoft bg-[#0B1424]/90 backdrop-blur px-4 sm:px-5 lg:px-8">
       <div className="h-[52px] flex items-center gap-6 overflow-x-auto scrollthin font-mono text-[12px]">
         <div className="flex items-center gap-2 shrink-0">
           <Clock3 className="h-3.5 w-3.5 text-dim" />

@@ -145,6 +145,26 @@ export function rarDistribution() {
   return pts;
 }
 
+// Shadow-mode cumulative paper P&L (k€) vs naive baseline (sell P50 at MGP,
+// no intraday, no BESS shifting). Baseline is the zero line; desk = human desk actual.
+export function paperPnl(seed = 63) {
+  const r = rng(seed);
+  const weeks = [
+    "02 Mar", "09 Mar", "16 Mar", "23 Mar", "30 Mar", "06 Apr", "13 Apr", "20 Apr", "27 Apr",
+    "04 May", "11 May", "18 May", "25 May", "01 Jun", "08 Jun", "15 Jun", "22 Jun", "29 Jun",
+  ];
+  let ai = 0;
+  let desk = 0;
+  return weeks.map((w, i) => {
+    // week 7: Genoa-low storm bust — the one week the naive baseline won
+    const aiStep = i === 6 ? -9 : 12 + i * 0.7 + r() * 10;
+    const deskStep = i === 6 ? -4 : 4 + i * 0.35 + r() * 7;
+    ai += aiStep;
+    desk += deskStep;
+    return { w, ai: Math.round(ai), desk: Math.round(desk) };
+  });
+}
+
 export function windRose(seed = 5) {
   const r = rng(seed);
   return ["N", "NE", "E", "SE", "S", "SW", "W", "NW"].map((dir) => ({

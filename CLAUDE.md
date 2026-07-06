@@ -10,7 +10,7 @@ Demo web app: AI renewable-energy commercialization platform ("HELIOS") built by
 ## Architecture
 - Next.js 14 App Router, TypeScript strict, Tailwind, Recharts.
 - `app/<route>/page.tsx` — one page per platform module. Server components by default; pages needing interactivity (`monitoring`, `copilot`) and all chart components are `"use client"`.
-- `components/shell/` — Sidebar (nav) + MarketStrip (sticky ticker header). Add new routes to `NAV` in Sidebar.tsx.
+- `components/shell/` — Sidebar (desktop nav), MobileNav (phone top bar + drawer), MarketStrip (sticky ticker header). Add new routes to `NAV` in nav.ts (shared by both navs). On phones MarketStrip sticks below MobileNav (`top-[52px] md:top-0`).
 - `components/ui/kit.tsx` — PageHeader, Card, Stat, Badge, Bar, Th/Td/TableWrap. Always reuse these.
 - `components/charts/charts.tsx` — themed Recharts wrappers. Add new charts here, keep the dark axis/tooltip theme constants.
 - `lib/data/` — assets.ts (14-asset registry), series.ts (seeded time-series generators), platform.ts (bids, agents, alerts, settlement, users, audit, integrations).
