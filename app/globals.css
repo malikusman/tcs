@@ -34,8 +34,17 @@ body {
   50% { opacity: 0.35; }
 }
 
+.tape-enter {
+  animation: tapein 0.35s ease-out;
+}
+@keyframes tapein {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tick { animation: none; }
+  .tape-enter { animation: none; }
   * { transition-duration: 0.01ms !important; }
 }
 

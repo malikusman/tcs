@@ -1,5 +1,6 @@
 import { PageHeader, Card, Badge, Stat, Bar, Th, Td, TableWrap } from "@/components/ui/kit";
 import { PaperPnlChart } from "@/components/charts/charts";
+import DeskTape from "@/components/paper/DeskTape";
 import { PAPER_SIGNALS, PAPER_ORDERS, GRADUATION } from "@/lib/data/platform";
 import { paperPnl } from "@/lib/data/series";
 import { cls } from "@/lib/util";
@@ -27,8 +28,15 @@ export default function PaperTradingPage() {
         eyebrow="Trade · Paper Trading"
         title="Shadow mode & strategy graduation"
         desc="Every agent recommendation is hash-locked before the market gate, then cleared against actual published GME and Terna results — forward-running, zero financial exposure, no hindsight bias. Sustained out-performance of the benchmark is what unlocks each automation level."
-        right={<Badge tone="violet">PAPER · zero financial exposure</Badge>}
+        right={
+          <>
+            <Badge tone="teal">live tape · paper only</Badge>
+            <Badge tone="violet">PAPER · zero financial exposure</Badge>
+          </>
+        }
       />
+
+      <DeskTape />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Stat label="Paper uplift vs baseline" value={`+${last.ai}`} unit="k€" tone="up" foot="18 wks cumulative · since 02 Mar" />

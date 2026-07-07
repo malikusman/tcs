@@ -3,6 +3,7 @@ import { ForecastFan, PriceChart, RevenueStack } from "@/components/charts/chart
 import { productionDay, priceDay, revenueMonths } from "@/lib/data/series";
 import { ASSETS, portfolioTotals, TECH_COLOR } from "@/lib/data/assets";
 import { ALERTS, AGENT_RUNS } from "@/lib/data/platform";
+import DeskMini from "@/components/paper/DeskMini";
 import Link from "next/link";
 import { ArrowUpRight, Sparkles } from "lucide-react";
 
@@ -44,9 +45,11 @@ export default function Dashboard() {
           <ForecastFan data={data} nowHour={nowHour} />
         </Card>
 
-        <Card title="Live alerts" sub="AI-triaged events with recommended actions" right={<Link href="/alerts" className="text-[12px] font-mono text-solar hover:underline">all →</Link>} pad={false}>
+        <div className="space-y-4">
+          <DeskMini />
+          <Card title="Live alerts" sub="AI-triaged events with recommended actions" right={<Link href="/alerts" className="text-[12px] font-mono text-solar hover:underline">all →</Link>} pad={false}>
           <div className="divide-y divide-linesoft">
-            {ALERTS.slice(0, 4).map((a) => (
+            {ALERTS.slice(0, 3).map((a) => (
               <div key={a.id} className="px-5 py-3.5">
                 <div className="flex items-center gap-2 mb-1">
                   <Badge tone={a.sev === "critical" ? "red" : a.sev === "warning" ? "amber" : "gray"}>{a.sev}</Badge>
@@ -57,7 +60,8 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
-        </Card>
+          </Card>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4 mb-4">

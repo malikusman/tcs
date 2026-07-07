@@ -12,6 +12,7 @@ Demo web app: AI renewable-energy commercialization platform ("HELIOS") built by
 - `app/<route>/page.tsx` — one page per platform module. Server components by default; pages needing interactivity (`monitoring`, `copilot`) and all chart components are `"use client"`.
 - `components/shell/` — Sidebar (desktop nav), MobileNav (phone top bar + drawer), MarketStrip (sticky ticker header). Add new routes to `NAV` in nav.ts (shared by both navs). On phones MarketStrip sticks below MobileNav (`top-[52px] md:top-0`).
 - `components/ui/kit.tsx` — PageHeader, Card, Stat, Badge, Bar, Th/Td/TableWrap. Always reuse these.
+- `components/paper/` — Live Paper Desk: useDeskFeed.ts (client hook — seeded micro-prices around priceDay(), agent BUY/SELL fill generation, session stats) shared by DeskTape (full tape on /paper) and DeskMini (Command Center widget). Client-only ticking after mount; SSR renders a static shell (same pattern as MarketStrip).
 - `components/charts/charts.tsx` — themed Recharts wrappers. Add new charts here, keep the dark axis/tooltip theme constants.
 - `lib/data/` — assets.ts (14-asset registry), series.ts (seeded time-series generators), platform.ts (bids, agents, alerts, settlement, users, audit, integrations).
 - `lib/util.ts` — `mulberry32` seeded RNG (keeps SSG deterministic — never use `Math.random()` in server components), formatters, `cls`.
@@ -26,4 +27,5 @@ Demo web app: AI renewable-energy commercialization platform ("HELIOS") built by
 ## Safe change checklist
 1. `npm run build` after edits (asset detail page uses `generateStaticParams` — keep it in sync with ASSETS ids).
 2. Charts must remain client components; don't import them into `lib/`.
-3. Don't introduce `Math.random()`/`Date.now()` into server-rendered output (hydration mismatch); client-side animation belongs in `useEffect` like MarketStrip.
+3. Don't introduce `Math.random()`/`Date.now()` into server-rendered output (hydration mismatch); client-side animation belongs in `useEffect` like MarketStrip. Client-side randomness uses the seeded `mulberry32`, never `Math.random()`.
+4. Honesty labeling: any live-looking data must carry its source label. The paper tape is labelled "simulated prices · all orders PAPER — nothing is submitted to any market"; never imply real market connectivity the demo doesn't have.

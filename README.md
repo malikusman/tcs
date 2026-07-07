@@ -40,6 +40,7 @@ Next.js 14 (App Router, standalone output) · React 18 · TypeScript · Tailwind
 - The Market Strip countdown targets the real MGP day-ahead gate closure (12:00 CET, D-1).
 - Market nomenclature is post-TIDE: MGP day-ahead, MI-A1/A2/A3 intraday auctions, XBID continuous intraday, MBR (Balancing & Redispatching Market) for Terna dispatching services, all on 15-minute MTUs.
 - Automation is earned, not switched on: the `/paper` module shows the shadow-mode graduation gates — signals hash-locked before each market gate, cleared against published GME results, with L2 unlocked 27 Apr and L3 unlocked 05 Jul 08:02 in the demo narrative.
+- The Live Paper Desk (top of `/paper`, plus a compact widget on the Command Center) shows agents buying and selling paper electricity in real time. It animates client-side around the same deterministic price curve as the rest of the demo and is honestly labelled: prices simulated, every order PAPER, nothing submitted to any market.
 
 ---
 © 2026 First Boston Capital — demo environment, static data, not for operational use.
