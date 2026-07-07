@@ -16,6 +16,10 @@ Demo web app: AI renewable-energy commercialization platform ("HELIOS") built by
 - `components/charts/charts.tsx` — themed Recharts wrappers. Add new charts here, keep the dark axis/tooltip theme constants.
 - `lib/data/` — assets.ts (14-asset registry), series.ts (seeded time-series generators), platform.ts (bids, agents, alerts, settlement, users, audit, integrations).
 - `lib/util.ts` — `mulberry32` seeded RNG (keeps SSG deterministic — never use `Math.random()` in server components), formatters, `cls`.
+- `lib/gates.ts` — the ONE TIDE gate calendar (MGP 12:00 · MI-A1 15:00 · MI-A2 22:00 D-1 · MI-A3 10:00 D · clearing 13:15, Europe/Rome). MarketStrip and the Gate Room both use `nextGate()`; never duplicate gate times elsewhere. Run `npx tsx scripts/verify-gates.ts` (via Docker node) after touching it.
+- `lib/agents/` — Gate Room engine: `datasource.ts` defines `GateDataSource` (SimulatedDataSource wraps the mock series; the pilot swaps in ENTSO-E/Open-Meteo implementations — new Gate Room code must not import mock series directly), `scripts.ts` builds PURE deterministic transcripts seeded by gate id (same gate → identical run; ~1 in 3 runs get a risk-rejection round; ~1 in 4 clearings lose).
+- `lib/paper/store.ts` — client-side session ledger (localStorage `helios-paper-ledger`), consumed via `useSyncExternalStore`; SSR sees a stable empty snapshot.
+- `components/gateroom/` — GateRoom (state: reveal loop, real sha-256 via crypto.subtle, clearing timers) + GateRail + Transcript. `components/paper/SignalLedger|PaperKpis` merge session signals into /paper.
 
 ## Conventions
 - Design tokens live in `tailwind.config.ts` (ink/surface/raised/line, solar/wind/battery, up/down, fg/muted/dim) and fonts in `app/layout.tsx` (Space Grotesk display, Inter body, IBM Plex Mono for all numbers).
@@ -28,4 +32,4 @@ Demo web app: AI renewable-energy commercialization platform ("HELIOS") built by
 1. `npm run build` after edits (asset detail page uses `generateStaticParams` — keep it in sync with ASSETS ids).
 2. Charts must remain client components; don't import them into `lib/`.
 3. Don't introduce `Math.random()`/`Date.now()` into server-rendered output (hydration mismatch); client-side animation belongs in `useEffect` like MarketStrip. Client-side randomness uses the seeded `mulberry32`, never `Math.random()`.
-4. Honesty labeling: any live-looking data must carry its source label. The paper tape is labelled "simulated prices · all orders PAPER — nothing is submitted to any market"; never imply real market connectivity the demo doesn't have.
+4. Honesty labeling: any live-looking data must carry its source label. The paper tape is labelled "simulated prices · all orders PAPER — nothing is submitted to any market"; the Gate Room carries "REPLAY MODE · simulated data" and its transcript footer; session ledger rows carry a "sim" tag. Never imply real market connectivity the demo doesn't have.

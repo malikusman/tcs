@@ -42,9 +42,18 @@ body {
   to { opacity: 1; transform: none; }
 }
 
+.row-flash {
+  animation: rowflash 1.6s ease-out;
+}
+@keyframes rowflash {
+  from { background: rgba(245, 166, 35, 0.14); }
+  to { background: transparent; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tick { animation: none; }
   .tape-enter { animation: none; }
+  .row-flash { animation: none; }
   * { transition-duration: 0.01ms !important; }
 }
 

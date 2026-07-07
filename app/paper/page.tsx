@@ -1,7 +1,10 @@
-import { PageHeader, Card, Badge, Stat, Bar, Th, Td, TableWrap } from "@/components/ui/kit";
+import Link from "next/link";
+import { PageHeader, Card, Badge, Bar, Th, Td, TableWrap } from "@/components/ui/kit";
 import { PaperPnlChart } from "@/components/charts/charts";
 import DeskTape from "@/components/paper/DeskTape";
-import { PAPER_SIGNALS, PAPER_ORDERS, GRADUATION } from "@/lib/data/platform";
+import SignalLedger from "@/components/paper/SignalLedger";
+import PaperKpis from "@/components/paper/PaperKpis";
+import { PAPER_ORDERS, GRADUATION } from "@/lib/data/platform";
 import { paperPnl } from "@/lib/data/series";
 import { cls } from "@/lib/util";
 
@@ -19,8 +22,6 @@ function DeltaEUR({ v }: { v: number | null }) {
 
 export default function PaperTradingPage() {
   const pnl = paperPnl();
-  const last = pnl[pnl.length - 1];
-  const vsDesk = last.ai - last.desk;
 
   return (
     <>
@@ -38,12 +39,24 @@ export default function PaperTradingPage() {
 
       <DeskTape />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Stat label="Paper uplift vs baseline" value={`+${last.ai}`} unit="k€" tone="up" foot="18 wks cumulative · since 02 Mar" />
-        <Stat label="Paper book vs human desk" value={`+${vsDesk}`} unit="k€" tone="solar" foot="the measured value of automation" />
-        <Stat label="Paper imbalance ratio" value="1.4" unit="%" tone="up" delta="threshold < 2.0%" />
-        <Stat label="Signals locked pre-gate" value="100" unit="%" foot="1,240 of 1,240 · sha-256 ledger" />
-      </div>
+      <Card className="mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="font-display text-[14px] font-semibold tracking-wide">Gate Room</div>
+            <p className="text-[12.5px] text-muted mt-0.5 leading-relaxed">
+              Watch the agents deliberate, hash-lock and clear the next TIDE gate — locked signals land in this ledger live.
+            </p>
+          </div>
+          <Link
+            href="/agents-live"
+            className="rounded-lg bg-solar text-[#0A1220] text-[13px] font-semibold px-4 py-2 hover:brightness-110 transition shrink-0"
+          >
+            Open Gate Room →
+          </Link>
+        </div>
+      </Card>
+
+      <PaperKpis />
 
       <div className="grid lg:grid-cols-3 gap-4 mb-4">
         <Card
@@ -86,37 +99,7 @@ export default function PaperTradingPage() {
         </Card>
       </div>
 
-      <Card
-        className="mb-4"
-        title="Signal ledger"
-        sub="Timestamped agent recommendations, hash-locked before gate closure — the audit trail that rules out after-the-fact fitting"
-        pad={false}
-      >
-        <TableWrap>
-          <thead>
-            <tr><Th>Signal</Th><Th>Locked (pre-gate)</Th><Th>Gate</Th><Th>Zone</Th><Th>Instruction · rationale</Th><Th>vs baseline</Th><Th>Status</Th></tr>
-          </thead>
-          <tbody>
-            {PAPER_SIGNALS.map((s) => (
-              <tr key={s.id}>
-                <Td><span className="font-mono text-[12px] text-muted">{s.id}</span></Td>
-                <Td>
-                  <div className="font-mono text-[12px] tabular-nums">{s.locked}</div>
-                  <div className="font-mono text-[10.5px] text-dim">sha256 {s.hash}</div>
-                </Td>
-                <Td><span className="font-mono text-[12px] text-muted">{s.gate}</span></Td>
-                <Td><span className="font-mono text-[12px]">{s.zone}</span></Td>
-                <Td>
-                  <div className="text-[13px]">{s.instruction}</div>
-                  <div className="text-[12px] text-dim">{s.rationale}</div>
-                </Td>
-                <Td><DeltaEUR v={s.deltaEUR} /></Td>
-                <Td><Badge tone={s.status === "settled" ? "teal" : "amber"}>{s.status}</Badge></Td>
-              </tr>
-            ))}
-          </tbody>
-        </TableWrap>
-      </Card>
+      <SignalLedger />
 
       <Card
         className="mb-4"

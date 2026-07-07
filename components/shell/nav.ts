@@ -2,7 +2,7 @@ import type { ElementType } from "react";
 import {
   LayoutGrid, Factory, Activity, CloudSun, TrendingUp, CandlestickChart,
   FlaskConical, Boxes, BatteryCharging, Network, ShieldAlert, Scale, Bot,
-  Workflow, BellRing, Settings2,
+  Workflow, BellRing, Settings2, Radio,
 } from "lucide-react";
 
 export const NAV: { group: string; items: { href: string; label: string; icon: ElementType }[] }[] = [
@@ -42,6 +42,7 @@ export const NAV: { group: string; items: { href: string; label: string; icon: E
     group: "AI Platform",
     items: [
       { href: "/copilot", label: "AI Copilot", icon: Bot },
+      { href: "/agents-live", label: "Gate Room · Live", icon: Radio },
       { href: "/agents", label: "Agents & MLOps", icon: Workflow },
     ],
   },

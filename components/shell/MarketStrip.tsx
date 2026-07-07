@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Clock3, Zap, Gauge } from "lucide-react";
+import { nextGate, msUntil, fmtCountdown } from "@/lib/gates";
 
 function useNow() {
   const [now, setNow] = useState<Date | null>(null);
@@ -23,17 +24,9 @@ function cet(now: Date) {
   }).format(now);
 }
 
-// MGP gate closure: 12:00 CET, day-ahead
+// MGP gate closure: 12:00 CET, day-ahead — calendar lives in lib/gates.ts
 function gateCountdown(now: Date) {
-  const rome = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Rome" }));
-  const gate = new Date(rome);
-  gate.setHours(12, 0, 0, 0);
-  if (rome >= gate) gate.setDate(gate.getDate() + 1);
-  const ms = gate.getTime() - rome.getTime();
-  const h = Math.floor(ms / 3600000);
-  const m = Math.floor((ms % 3600000) / 60000);
-  const s = Math.floor((ms % 60000) / 1000);
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return fmtCountdown(msUntil(nextGate(now, { name: "MGP" }), now));
 }
 
 // tiny deterministic wiggle for tickers
