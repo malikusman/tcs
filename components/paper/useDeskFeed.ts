@@ -28,14 +28,17 @@ export interface DeskStats {
   pnlEUR: number; // session paper P&L, open positions marked to latest micro-price
   boughtMWh: number;
   soldMWh: number;
+  buyCount: number;
+  sellCount: number;
 }
 
-const ZONES: DeskZone[] = ["SUD", "SICI", "SARD", "CNOR"];
+export const ZONES: DeskZone[] = ["SUD", "SICI", "SARD", "CNOR"];
 const ZONE_WEIGHT = [0.35, 0.3, 0.2, 0.15];
 
 // Hourly zone curves for "today", derived from the same seeded series the rest of
 // the app renders — the tape stays consistent with the Market Intelligence page.
-function zoneCurves(): Record<DeskZone, number[]> {
+// Exported so the Paper order book ladder reuses the exact same price surface.
+export function zoneCurves(): Record<DeskZone, number[]> {
   const day = priceDay();
   return {
     SUD: day.map((p) => p.sud as number),
@@ -50,7 +53,7 @@ function pct(curve: number[], q: number) {
   return s[Math.min(s.length - 1, Math.floor(q * s.length))];
 }
 
-function romeClock(d: Date) {
+export function romeClock(d: Date) {
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Europe/Rome", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
   }).formatToParts(d);
@@ -62,7 +65,7 @@ function two(n: number) {
   return String(n).padStart(2, "0");
 }
 
-function mtuLabel(h: number, m: number) {
+export function mtuLabel(h: number, m: number) {
   const q = Math.floor(m / 15);
   const endM = (q + 1) * 15;
   const end = endM === 60 ? `${two((h + 1) % 24)}:00` : `${two(h)}:${two(endM)}`;
@@ -71,7 +74,8 @@ function mtuLabel(h: number, m: number) {
 
 // Anchor on the current 15-min MTU (linear interpolation between the hourly points),
 // then add a mean-reverting wiggle of ±1.5% that is stable within a minute.
-function microPrice(curve: number[], d: Date, zoneIdx: number) {
+// Exported so the order book ladder marks its mid off the same micro-price.
+export function microPrice(curve: number[], d: Date, zoneIdx: number) {
   const { h, m } = romeClock(d);
   const frac = m / 60;
   const anchor = curve[h] * (1 - frac) + curve[(h + 1) % 24] * frac;
@@ -129,7 +133,7 @@ export function useDeskFeed(maxRows = 12) {
   const [fills, setFills] = useState<PaperFill[]>([]);
   const [, setTick] = useState(0); // re-render so marks/P&L track the micro-price
   const curvesRef = useRef<Record<DeskZone, number[]> | null>(null);
-  const sessionRef = useRef({ cash: 0, bought: 0, sold: 0, net: { SUD: 0, SICI: 0, SARD: 0, CNOR: 0 } as Record<DeskZone, number> });
+  const sessionRef = useRef({ cash: 0, bought: 0, sold: 0, buys: 0, sells: 0, net: { SUD: 0, SICI: 0, SARD: 0, CNOR: 0 } as Record<DeskZone, number> });
   const idRef = useRef(1);
 
   useEffect(() => {
@@ -140,12 +144,12 @@ export function useDeskFeed(maxRows = 12) {
 
     const book = (f: PaperFill) => {
       const st = sessionRef.current;
-      if (f.side === "BUY") { st.cash -= f.mwh * f.price; st.bought += f.mwh; st.net[f.zone] += f.mwh; }
-      else { st.cash += f.mwh * f.price; st.sold += f.mwh; st.net[f.zone] -= f.mwh; }
+      if (f.side === "BUY") { st.cash -= f.mwh * f.price; st.bought += f.mwh; st.buys += 1; st.net[f.zone] += f.mwh; }
+      else { st.cash += f.mwh * f.price; st.sold += f.mwh; st.sells += 1; st.net[f.zone] -= f.mwh; }
     };
 
     // Seed the tape so it is never empty on first paint after mount.
-    sessionRef.current = { cash: 0, bought: 0, sold: 0, net: { SUD: 0, SICI: 0, SARD: 0, CNOR: 0 } };
+    sessionRef.current = { cash: 0, bought: 0, sold: 0, buys: 0, sells: 0, net: { SUD: 0, SICI: 0, SARD: 0, CNOR: 0 } };
     const now = Date.now();
     const seeds = [52000, 37000, 21000, 8000].map((ago) => makeFill(new Date(now - ago), idRef.current++, curves));
     seeds.forEach(book);
@@ -172,7 +176,7 @@ export function useDeskFeed(maxRows = 12) {
     const d = new Date();
     ZONES.forEach((z, i) => { pnlEUR += st.net[z] * microPrice(curvesRef.current![z], d, i); });
   }
-  const stats: DeskStats = { pnlEUR: Math.round(pnlEUR), boughtMWh: Math.round(st.bought * 10) / 10, soldMWh: Math.round(st.sold * 10) / 10 };
+  const stats: DeskStats = { pnlEUR: Math.round(pnlEUR), boughtMWh: Math.round(st.bought * 10) / 10, soldMWh: Math.round(st.sold * 10) / 10, buyCount: st.buys, sellCount: st.sells };
 
   return { fills, stats, ready: fills.length > 0 };
 }

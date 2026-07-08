@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PageHeader, Card, Badge, Bar, Th, Td, TableWrap } from "@/components/ui/kit";
 import { PaperPnlChart } from "@/components/charts/charts";
 import DeskTape from "@/components/paper/DeskTape";
+import OrderBook from "@/components/paper/OrderBook";
 import SignalLedger from "@/components/paper/SignalLedger";
 import PaperKpis from "@/components/paper/PaperKpis";
 import { PAPER_ORDERS, GRADUATION } from "@/lib/data/platform";
@@ -37,7 +38,12 @@ export default function PaperTradingPage() {
         }
       />
 
-      <DeskTape />
+      <div className="grid lg:grid-cols-3 gap-4 mb-4">
+        <div className="lg:col-span-2">
+          <DeskTape />
+        </div>
+        <OrderBook zone="SUD" />
+      </div>
 
       <Card className="mb-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -103,14 +109,14 @@ export default function PaperTradingPage() {
 
       <Card
         className="mb-4"
-        title="Paper order book"
+        title="Paper order blotter"
         sub="Same lifecycle as the live Trading Engine — build → lock → clear — but flagged PAPER and settled against actual GME results"
         pad={false}
         right={<Badge tone="violet">PAPER</Badge>}
       >
         <TableWrap>
           <thead>
-            <tr><Th>ID</Th><Th>Market</Th><Th>Zone</Th><Th>Hours</Th><Th>Volume</Th><Th>Limit</Th><Th>Cleared (actual GME)</Th><Th>vs baseline</Th><Th>Status</Th></tr>
+            <tr><Th>ID</Th><Th>Market</Th><Th>Zone</Th><Th>Side</Th><Th>Hours</Th><Th>Volume</Th><Th>Limit</Th><Th>Cleared (actual GME)</Th><Th>vs baseline</Th><Th>Status</Th></tr>
           </thead>
           <tbody>
             {PAPER_ORDERS.map((o) => (
@@ -118,8 +124,9 @@ export default function PaperTradingPage() {
                 <Td><span className="font-mono text-[12px] text-muted">{o.id}</span></Td>
                 <Td><span className="font-mono text-[12px]">{o.market}</span></Td>
                 <Td><span className="font-mono text-[12px]">{o.zone}</span></Td>
+                <Td><span className={cls("font-mono text-[12px] font-semibold", o.volumeMWh < 0 ? "text-up" : "text-down")}>{o.volumeMWh < 0 ? "BUY" : "SELL"}</span></Td>
                 <Td><span className="font-mono text-[12px] text-muted">{o.hours}</span></Td>
-                <Td><span className={cls("font-mono tabular-nums", o.volumeMWh < 0 ? "text-down" : "text-fg")}>{o.volumeMWh.toLocaleString()} MWh</span></Td>
+                <Td><span className="font-mono tabular-nums text-fg">{Math.abs(o.volumeMWh).toLocaleString()} MWh</span></Td>
                 <Td><span className="font-mono tabular-nums">{o.limitEUR === 0 ? "€0.00 (price-taker)" : `€${o.limitEUR.toFixed(2)}`}</span></Td>
                 <Td><span className="font-mono tabular-nums">{o.clearedEUR === null ? "—" : `€${o.clearedEUR.toFixed(2)}`}</span></Td>
                 <Td><DeltaEUR v={o.deltaEUR} /></Td>

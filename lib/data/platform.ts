@@ -109,21 +109,28 @@ export interface PaperSignal {
   gate: string;
   market: Bid["market"];
   zone: string;
+  side: "SELL" | "BUY" | "HOLD"; // net direction of the signal
   instruction: string;
   rationale: string;
   hash: string;
   deltaEUR: number | null; // paper P&L vs naive baseline; null = awaiting clearing
   status: "settled" | "locked";
+  // Optional detail (shown when the ledger row is expanded):
+  hashFull?: string; // full sha-256 of the canonical bid-set JSON
+  gateClose?: string; // gate-closure timestamp — always after `locked`
+  volumeMWh?: number; // signed: negative = buy
+  baselineEUR?: number; // naive-baseline capture for the same volume
+  clearedEUR?: number; // actual published GME clearing used to settle
 }
 
 export const PAPER_SIGNALS: PaperSignal[] = [
-  { id: "SIG-2851", locked: "05 Jul 11:38:52", gate: "MGP 06 Jul · 12:00", market: "MGP", zone: "ALL", instruction: "D+1 bid set · commit P48 blend, shade H12–H14 SUD to P40", rationale: "Record solar in-feed forecast; neg-price prob 14% in solar belly", hash: "e3b7…41c9", deltaEUR: null, status: "locked" },
-  { id: "SIG-2850", locked: "05 Jul 13:47:10", gate: "MI-A3 · 14:30", market: "MI-A3", zone: "SICI", instruction: "Hold BESS 96 MWh for H18–H20, floor €126", rationale: "Evening spread forecast +€38 vs day-ahead lock, 74% confidence", hash: "9f02…b7aa", deltaEUR: null, status: "locked" },
-  { id: "SIG-2849", locked: "05 Jul 12:55:31", gate: "XBID · cont. (H15 lead 14:15)", market: "XBID", zone: "CNOR", instruction: "Sell 64 MWh H15–H17, floor €66.80", rationale: "Wind front 90 min earlier than ECMWF run; close long before delivery", hash: "77d1…03fe", deltaEUR: null, status: "locked" },
-  { id: "SIG-2848", locked: "05 Jul 09:12:44", gate: "MI-A1 · 10:30", market: "MI-A1", zone: "SUD", instruction: "Buy back 180 MWh H14–H16", rationale: "Satellite nowcast −8% vs D-1 commit; convert imbalance into managed trade", hash: "c58a…d210", deltaEUR: 1140, status: "settled" },
-  { id: "SIG-2847", locked: "04 Jul 11:41:22", gate: "MGP 05 Jul · 12:00", market: "MGP", zone: "SUD", instruction: "Commit P42 (not P50) in H12–H15 · 1,980 MWh", rationale: "Neg-price prob 11% H13; asymmetric imbalance penalty favors shading", hash: "1a9e…6f57", deltaEUR: 3140, status: "settled" },
-  { id: "SIG-2846", locked: "04 Jul 11:41:22", gate: "MGP 05 Jul · 12:00", market: "MGP", zone: "SICI", instruction: "Commit P55 H10–H15 · 1,310 MWh", rationale: "High-confidence Solcast nowcast (nMAE 1.8%); sell above P50 into tight zone", hash: "b402…8811", deltaEUR: 1870, status: "settled" },
-  { id: "SIG-2843", locked: "03 Jul 17:20:08", gate: "MI-A2 04 Jul · 13:30", market: "MI-A2", zone: "SARD", instruction: "Sell 60 MWh H16, floor €71.00", rationale: "Cable congestion signal; expected SARD premium did not materialize", hash: "f6c3…2d94", deltaEUR: -640, status: "settled" },
+  { id: "SIG-2851", locked: "05 Jul 11:38:52", gate: "MGP 06 Jul · 12:00", market: "MGP", zone: "ALL", side: "SELL", instruction: "D+1 bid set · commit P48 blend, shade H12–H14 SUD to P40", rationale: "Record solar in-feed forecast; neg-price prob 14% in solar belly", hash: "e3b7…41c9", deltaEUR: null, status: "locked", hashFull: "e3b7c1a9d4f80b26e5c73a91f240d18b6c9e0af35721d84e9b0c6a17f83e41c9", gateClose: "06 Jul 12:00:00", volumeMWh: 4120 },
+  { id: "SIG-2850", locked: "05 Jul 13:47:10", gate: "MI-A3 · 14:30", market: "MI-A3", zone: "SICI", side: "HOLD", instruction: "Hold BESS 96 MWh for H18–H20, floor €126", rationale: "Evening spread forecast +€38 vs day-ahead lock, 74% confidence", hash: "9f02…b7aa", deltaEUR: null, status: "locked", hashFull: "9f02e7143b8a6cd095214f7e0b3ac6812d5f409e7c1b6a380e94f2d71c58b7aa", gateClose: "05 Jul 14:30:00", volumeMWh: 96 },
+  { id: "SIG-2849", locked: "05 Jul 12:55:31", gate: "XBID · cont. (H15 lead 14:15)", market: "XBID", zone: "CNOR", side: "SELL", instruction: "Sell 64 MWh H15–H17, floor €66.80", rationale: "Wind front 90 min earlier than ECMWF run; close long before delivery", hash: "77d1…03fe", deltaEUR: null, status: "locked", hashFull: "77d1a0b45e9c2f8163d70a4b1e6c98af250d7e3b9c04f18a6d2b57e0913a03fe", gateClose: "05 Jul 14:15:00", volumeMWh: 64 },
+  { id: "SIG-2848", locked: "05 Jul 09:12:44", gate: "MI-A1 · 10:30", market: "MI-A1", zone: "SUD", side: "BUY", instruction: "Buy back 180 MWh H14–H16", rationale: "Satellite nowcast −8% vs D-1 commit; convert imbalance into managed trade", hash: "c58a…d210", deltaEUR: 1140, status: "settled", hashFull: "c58a3d1f70b9e46a2c8015d3f7ba90e64d1c8f37e02b95a6d4c7031e8f9bd210", gateClose: "05 Jul 10:30:00", volumeMWh: -180, baselineEUR: 5760, clearedEUR: 6900 },
+  { id: "SIG-2847", locked: "04 Jul 11:41:22", gate: "MGP 05 Jul · 12:00", market: "MGP", zone: "SUD", side: "SELL", instruction: "Commit P42 (not P50) in H12–H15 · 1,980 MWh", rationale: "Neg-price prob 11% H13; asymmetric imbalance penalty favors shading", hash: "1a9e…6f57", deltaEUR: 3140, status: "settled", hashFull: "1a9e5c04d7b3f8102a6e9c41f0db72e85d3c6a19b7f04e28c105d3a9be6f6f57", gateClose: "05 Jul 12:00:00", volumeMWh: 1980, baselineEUR: 171200, clearedEUR: 174340 },
+  { id: "SIG-2846", locked: "04 Jul 11:41:22", gate: "MGP 05 Jul · 12:00", market: "MGP", zone: "SICI", side: "SELL", instruction: "Commit P55 H10–H15 · 1,310 MWh", rationale: "High-confidence Solcast nowcast (nMAE 1.8%); sell above P50 into tight zone", hash: "b402…8811", deltaEUR: 1870, status: "settled", hashFull: "b40273e1c9a8f5460d2b7e1039acf68150d4e7b2c916a83f0e5d29c471a88811", gateClose: "05 Jul 12:00:00", volumeMWh: 1310, baselineEUR: 128650, clearedEUR: 130520 },
+  { id: "SIG-2843", locked: "03 Jul 17:20:08", gate: "MI-A2 04 Jul · 13:30", market: "MI-A2", zone: "SARD", side: "SELL", instruction: "Sell 60 MWh H16, floor €71.00", rationale: "Cable congestion signal; expected SARD premium did not materialize", hash: "f6c3…2d94", deltaEUR: -640, status: "settled", hashFull: "f6c3901ad7e42b85c0f6193e7a4db028c5f1e9a37b04628d1c9e70f53a2d2d94", gateClose: "04 Jul 13:30:00", volumeMWh: 60, baselineEUR: 4260, clearedEUR: 3620 },
 ];
 
 export interface PaperOrder {

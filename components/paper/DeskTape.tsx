@@ -25,7 +25,7 @@ export default function DeskTape() {
 
   return (
     <Card
-      className="mb-4"
+      className="h-full"
       title="Live paper desk"
       sub="Agents buying and selling paper electricity in real time — zero financial exposure"
       pad={false}
@@ -47,6 +47,12 @@ export default function DeskTape() {
         </span>
         <span className="text-dim">
           SOLD <span className="text-fg tabular-nums">{ready ? `${stats.soldMWh} MWh` : "—"}</span>
+        </span>
+        <span className="text-dim">
+          FILLS{" "}
+          <span className="text-up tabular-nums">{ready ? `${stats.buyCount} BUY` : "—"}</span>
+          <span className="text-dim"> · </span>
+          <span className="text-down tabular-nums">{ready ? `${stats.sellCount} SELL` : "—"}</span>
         </span>
       </div>
 
