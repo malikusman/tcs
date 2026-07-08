@@ -99,21 +99,27 @@ function makeFill(d: Date, id: number, curves: Record<DeskZone, number[]>): Pape
   const curve = curves[zone];
   const micro = microPrice(curve, d, zi);
 
-  // Agent heuristics — both sides occur naturally:
-  // BESS charges below the 35th percentile of today's curve, discharges above the 75th;
-  // in between, the Intraday Agent trades the solar position around P50.
-  let agent: PaperFill["agent"];
+  // Agent heuristics — the desk trades BOTH directions in every price regime, so
+  // the tape is never one-sided (the old logic keyed side purely off the day-wide
+  // percentile, which printed all-BUY through the cheap solar belly and all-SELL in
+  // the evening peak). Price still tilts the balance: BESS charging dominates when
+  // cheap, discharging when rich, but the intraday book always works the other side.
+  const cheap = micro < pct(curve, 0.4);
+  const rich = micro > pct(curve, 0.62);
+  const sr = r();
   let side: PaperFill["side"];
+  if (cheap) side = sr < 0.64 ? "BUY" : "SELL"; // charge, but still sell surplus
+  else if (rich) side = sr < 0.64 ? "SELL" : "BUY"; // discharge, but still buy back
+  else side = sr < 0.5 ? "BUY" : "SELL"; // balanced through the mid-band
+
+  // BESS takes the price-extreme direction (charge cheap / discharge rich); the
+  // Intraday Agent works everything else (closing positions, lifting/hitting).
+  let agent: PaperFill["agent"];
   let mwh: number;
-  if (micro < pct(curve, 0.35)) {
-    agent = "BESS Agent"; side = "BUY"; mwh = Math.round((2 + r() * 6) * 10) / 10;
-  } else if (micro > pct(curve, 0.75)) {
-    agent = "BESS Agent"; side = "SELL"; mwh = Math.round((2 + r() * 6) * 10) / 10;
+  if ((cheap && side === "BUY") || (rich && side === "SELL")) {
+    agent = "BESS Agent"; mwh = Math.round((2 + r() * 6) * 10) / 10;
   } else {
-    agent = "Intraday Agent";
-    const solarHours = h >= 10 && h <= 16;
-    side = (solarHours ? r() < 0.62 : r() < 0.42) ? "SELL" : "BUY"; // surplus above P50 in solar belly
-    mwh = Math.round(10 + r() * 30);
+    agent = "Intraday Agent"; mwh = Math.round(10 + r() * 30);
   }
   if (r() < 1 / 7) agent = "desk · manual"; // human-in-the-loop fills
 
@@ -126,7 +132,13 @@ function makeFill(d: Date, id: number, curves: Record<DeskZone, number[]>): Pape
   const spread = 0.05 + r() * 0.35;
   const price = Math.round((micro + (side === "SELL" ? spread : -spread)) * 100) / 100;
 
-  return { id, time: `${two(h)}:${two(m)}:${two(s)}`, agent, side, mwh, zone, mtu: mtuLabel(h, m), price, market };
+  // Deliver 0–4 MTUs ahead so the tape shows a spread of delivery windows, not
+  // all the same 15-min block.
+  const delMin = h * 60 + Math.floor(m / 15) * 15 + Math.floor(r() * 5) * 15;
+  const dh = Math.floor(delMin / 60) % 24;
+  const dm = delMin % 60;
+
+  return { id, time: `${two(h)}:${two(m)}:${two(s)}`, agent, side, mwh, zone, mtu: mtuLabel(dh, dm), price, market };
 }
 
 export function useDeskFeed(maxRows = 12) {
