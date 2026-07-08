@@ -10,7 +10,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Card, Badge } from "@/components/ui/kit";
 import { cls, mulberry32 } from "@/lib/util";
-import { zoneCurves, microPrice, romeClock, mtuLabel, ZONES, DeskZone } from "./useDeskFeed";
+import { DEMO_HOUR } from "@/lib/data/series";
+import { zoneCurves, microPrice, mtuLabel, ZONES, DeskZone } from "./useDeskFeed";
 
 const TICK = 0.15; // €/MWh price step between ladder levels
 const LEVELS = 6; // resting levels shown per side
@@ -66,11 +67,11 @@ function useOrderBook(zone: DeskZone) {
 
     const rebuild = () => {
       if (!alive) return;
-      const d = new Date();
-      const { h, m } = romeClock(d);
-      const minute = Math.floor(d.getTime() / 60000);
-      const mid = microPrice(curves[zone], d, zi);
-      setMtu(mtuLabel(h, m));
+      const minute = Math.floor(Date.now() / 60000);
+      // Front MTU of the frozen 14:00 session, rotating gently over real minutes.
+      const quarter = Math.floor((minute % 60) / 15); // 0..3
+      const mid = microPrice(curves[zone], DEMO_HOUR + quarter / 4, minute, zi);
+      setMtu(mtuLabel(DEMO_HOUR, quarter * 15));
       setBook(makeBook(mid, minute, zi, tickRef.current++));
       const r = mulberry32((minute ^ (tickRef.current * 977)) >>> 0);
       timer = setTimeout(rebuild, 1800 + r() * 1600); // ~1.8–3.4 s refresh

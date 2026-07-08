@@ -1,5 +1,11 @@
 import { rng } from "@/lib/util";
 
+// The one frozen "live" moment the whole demo narrative sits at:
+// Sun 05 Jul 2026, 14:00 CET. Live client widgets (MarketStrip ticker, the paper
+// desk, the order book) anchor their prices here so every surface agrees, even
+// though their clocks tick in real time. Never hard-code 14 elsewhere.
+export const DEMO_HOUR = 14;
+
 export interface HourPoint {
   h: string;
   hour: number;
@@ -16,7 +22,7 @@ function solarShape(hour: number) {
 // 24h portfolio production: actual (past hours), forecast + confidence band
 export function productionDay(seed = 7) {
   const r = rng(seed);
-  const nowHour = 14; // frozen "live" moment for the demo
+  const nowHour = DEMO_HOUR; // frozen "live" moment for the demo
   const data: HourPoint[] = [];
   for (let h = 0; h < 24; h++) {
     const solar = solarShape(h) * 380;

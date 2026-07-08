@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import { Clock3, Zap, Gauge } from "lucide-react";
 import { nextGate, msUntil, fmtCountdown } from "@/lib/gates";
+import { priceDay, DEMO_HOUR } from "@/lib/data/series";
+
+// Ticker prices come from the ONE price curve (priceDay) at the frozen 14:00
+// moment, so the header agrees with the paper desk, the order book and /market.
+const PX = priceDay()[DEMO_HOUR];
 
 function useNow() {
   const [now, setNow] = useState<Date | null>(null);
@@ -55,9 +60,9 @@ export default function MarketStrip() {
 
         <div className="h-5 w-px bg-line shrink-0" />
 
-        <Tick label="PUN Index" value={now ? wiggle(now, 92.41, 0.35, 7) : 92.41} unit="€/MWh" delta={+1.8} />
-        <Tick label="SUD" value={now ? wiggle(now, 88.12, 0.4, 9) : 88.12} unit="€/MWh" delta={-0.6} />
-        <Tick label="SICI" value={now ? wiggle(now, 99.7, 0.5, 8) : 99.7} unit="€/MWh" delta={+3.2} />
+        <Tick label="PUN Index" value={now ? wiggle(now, PX.pun as number, 0.35, 7) : (PX.pun as number)} unit="€/MWh" delta={+1.8} />
+        <Tick label="SUD" value={now ? wiggle(now, PX.sud as number, 0.4, 9) : (PX.sud as number)} unit="€/MWh" delta={-0.6} />
+        <Tick label="SICI" value={now ? wiggle(now, PX.sici as number, 0.5, 8) : (PX.sici as number)} unit="€/MWh" delta={+3.2} />
 
         <div className="h-5 w-px bg-line shrink-0" />
 

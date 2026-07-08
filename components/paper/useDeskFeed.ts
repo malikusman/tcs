@@ -7,10 +7,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { mulberry32 } from "@/lib/util";
-import { priceDay } from "@/lib/data/series";
+import { priceDay, DEMO_HOUR } from "@/lib/data/series";
+import { gateCalendar, romeNow } from "@/lib/gates";
 
 export type DeskZone = "SUD" | "SICI" | "SARD" | "CNOR";
-export type DeskMarket = "XBID" | "MI-A2" | "MI-A3";
+export type DeskMarket = "XBID" | "MI-A1" | "MI-A2" | "MI-A3";
 
 export interface PaperFill {
   id: number;
@@ -72,21 +73,38 @@ export function mtuLabel(h: number, m: number) {
   return `${two(h)}:${two(q * 15)}–${end}`;
 }
 
-// Anchor on the current 15-min MTU (linear interpolation between the hourly points),
-// then add a mean-reverting wiggle of ±1.5% that is stable within a minute.
-// Exported so the order book ladder marks its mid off the same micro-price.
-export function microPrice(curve: number[], d: Date, zoneIdx: number) {
-  const { h, m } = romeClock(d);
-  const frac = m / 60;
+// Micro-price for a continuous hour position `hourFrac` (e.g. 14.25 = the
+// 14:15–14:30 MTU): linear interpolation between the two hourly points plus a
+// mean-reverting ±1.5% wiggle that is stable within a real minute (seedMinute) so
+// the tape feels live. The desk anchors hourFrac on DEMO_HOUR — the frozen 14:00
+// session — so its prices agree with the MarketStrip ticker and /market, even
+// though timestamps tick in real time (you trade *now* for the 14:00 delivery).
+// Exported so the order book ladder marks its mid off the same curve.
+export function microPrice(curve: number[], hourFrac: number, seedMinute: number, zoneIdx: number) {
+  const h = Math.floor(hourFrac) % 24;
+  const frac = hourFrac - Math.floor(hourFrac);
   const anchor = curve[h] * (1 - frac) + curve[(h + 1) % 24] * frac;
-  const r = mulberry32((Math.floor(d.getTime() / 60000) * 7919 + zoneIdx * 131) >>> 0);
+  const r = mulberry32((seedMinute * 7919 + zoneIdx * 131) >>> 0);
   const wiggle = (r() + r() - 1) * 0.015; // triangular around 0, ±1.5%
   return anchor * (1 + wiggle);
 }
 
-function makeFill(d: Date, id: number, curves: Record<DeskZone, number[]>): PaperFill {
+// Which MI-A auction is inside its 45-min pre-gate window right now, if any —
+// sourced from the ONE gate calendar (lib/gates.ts), never a duplicated time.
+function activeAuction(now: Date): DeskMarket | null {
+  const rome = romeNow(now).getTime();
+  for (const g of gateCalendar(now, 0)) {
+    if (g.name !== "MI-A1" && g.name !== "MI-A2" && g.name !== "MI-A3") continue;
+    const close = g.at.getTime();
+    if (rome >= close - 45 * 60000 && rome < close) return g.name as DeskMarket;
+  }
+  return null;
+}
+
+function makeFill(d: Date, id: number, curves: Record<DeskZone, number[]>, auctionTag: DeskMarket | null): PaperFill {
   const r = mulberry32(((d.getTime() & 0x7fffffff) ^ (id * 2654435761)) >>> 0);
-  const { h, m, s } = romeClock(d);
+  const { h, m, s } = romeClock(d); // live wall-clock — timestamp only
+  const seedMinute = Math.floor(d.getTime() / 60000);
 
   let zi = 0;
   const zr = r();
@@ -97,7 +115,10 @@ function makeFill(d: Date, id: number, curves: Record<DeskZone, number[]>): Pape
   }
   const zone = ZONES[zi];
   const curve = curves[zone];
-  const micro = microPrice(curve, d, zi);
+
+  // Delivery lands in the frozen 14:00 session: one of its four 15-min MTUs.
+  const q = Math.floor(r() * 4); // 0..3 → 14:00 / 14:15 / 14:30 / 14:45
+  const micro = microPrice(curve, DEMO_HOUR + q / 4, seedMinute, zi);
 
   // Agent heuristics — the desk trades BOTH directions in every price regime, so
   // the tape is never one-sided (the old logic keyed side purely off the day-wide
@@ -123,18 +144,16 @@ function makeFill(d: Date, id: number, curves: Record<DeskZone, number[]>): Pape
   }
   if (r() < 1 / 7) agent = "desk · manual"; // human-in-the-loop fills
 
-  // Continuous fills print as XBID; within 45 min of an MI-A gate some fills tag the auction.
+  // Continuous fills print as XBID; inside an MI-A gate's pre-close window (from
+  // lib/gates.ts) some fills tag that auction instead.
   let market: DeskMarket = "XBID";
-  const mins = h * 60 + m;
-  if (mins >= 12 * 60 + 45 && mins < 13 * 60 + 30 && r() < 0.5) market = "MI-A2"; // gate 13:30
-  else if (mins >= 13 * 60 + 45 && mins < 14 * 60 + 30 && r() < 0.5) market = "MI-A3"; // gate 14:30
+  if (auctionTag && r() < 0.5) market = auctionTag;
 
   const spread = 0.05 + r() * 0.35;
   const price = Math.round((micro + (side === "SELL" ? spread : -spread)) * 100) / 100;
 
-  // Deliver 0–4 MTUs ahead so the tape shows a spread of delivery windows, not
-  // all the same 15-min block.
-  const delMin = h * 60 + Math.floor(m / 15) * 15 + Math.floor(r() * 5) * 15;
+  // Delivery MTU label within the frozen 14:00 session.
+  const delMin = DEMO_HOUR * 60 + q * 15;
   const dh = Math.floor(delMin / 60) % 24;
   const dm = delMin % 60;
 
@@ -163,7 +182,8 @@ export function useDeskFeed(maxRows = 12) {
     // Seed the tape so it is never empty on first paint after mount.
     sessionRef.current = { cash: 0, bought: 0, sold: 0, buys: 0, sells: 0, net: { SUD: 0, SICI: 0, SARD: 0, CNOR: 0 } };
     const now = Date.now();
-    const seeds = [52000, 37000, 21000, 8000].map((ago) => makeFill(new Date(now - ago), idRef.current++, curves));
+    const seedTag = activeAuction(new Date(now));
+    const seeds = [52000, 37000, 21000, 8000].map((ago) => makeFill(new Date(now - ago), idRef.current++, curves, seedTag));
     seeds.forEach(book);
     setFills([...seeds].reverse());
 
@@ -171,7 +191,7 @@ export function useDeskFeed(maxRows = 12) {
       const r = mulberry32((Date.now() ^ (idRef.current * 977)) >>> 0);
       timer = setTimeout(() => {
         if (!alive) return;
-        const f = makeFill(new Date(), idRef.current++, curves);
+        const f = makeFill(new Date(), idRef.current++, curves, activeAuction(new Date()));
         book(f);
         setFills((prev) => [f, ...prev].slice(0, maxRows));
         schedule();
@@ -185,8 +205,9 @@ export function useDeskFeed(maxRows = 12) {
   const st = sessionRef.current;
   let pnlEUR = st.cash;
   if (curvesRef.current) {
-    const d = new Date();
-    ZONES.forEach((z, i) => { pnlEUR += st.net[z] * microPrice(curvesRef.current![z], d, i); });
+    const seedMinute = Math.floor(Date.now() / 60000);
+    // Mark open positions at the 14:00 session mid (frac 0.5).
+    ZONES.forEach((z, i) => { pnlEUR += st.net[z] * microPrice(curvesRef.current![z], DEMO_HOUR + 0.5, seedMinute, i); });
   }
   const stats: DeskStats = { pnlEUR: Math.round(pnlEUR), boughtMWh: Math.round(st.bought * 10) / 10, soldMWh: Math.round(st.sold * 10) / 10, buyCount: st.buys, sellCount: st.sells };
 
